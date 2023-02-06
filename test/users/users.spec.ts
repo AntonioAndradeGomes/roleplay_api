@@ -12,7 +12,6 @@ test.group("user", (group) => {
       email: "teste@teste.com",
       username: "teste",
       password: "teste",
-      avatar: "http://images.com/image/1",
     };
     //se a rota não existe (404) deve ser implementada no projeto
     const { body } = await supertest(BASEURL)
@@ -26,7 +25,6 @@ test.group("user", (group) => {
     assert.equal(body.user.email, userPayload.email);
     assert.equal(body.user.username, userPayload.username);
     assert.notExists(body.user.password, "Password defined");
-    assert.equal(body.user.avatar, userPayload.avatar);
   });
 
   test("it should return 409 when email is already in use", async (assert) => {
@@ -37,7 +35,6 @@ test.group("user", (group) => {
         username: "teste",
         email,
         password: "teste",
-        avatar: "http://images.com/image/1",
       })
       .expect(409);
 
@@ -55,7 +52,6 @@ test.group("user", (group) => {
         username,
         email: "teste@teste.com",
         password: "teste",
-        avatar: "http://images.com/image/1",
       })
       .expect(409);
 
@@ -65,9 +61,30 @@ test.group("user", (group) => {
     assert.equal(body.status, 409);
   });
 
-  test.only("it should return 422 when required data is not provided", async (assert) => {
+  test("it should return 422 when required data is not provided", async (assert) => {
 
     const {body} = await supertest(BASEURL).post('/users').send({}).expect(422);
+    console.log(body);
+    assert.equal(body.code,'BAD_REQUEST');
+    assert.equal(body.status, 422);
+  });
+
+  test('it should return 422 when providing an invalid email', async (assert) => {
+    const {body} = await supertest(BASEURL).post('/users').send({
+      email : 'test@',
+      password: 'test',
+      username: 'test'
+    }).expect(422);
+    assert.equal(body.code,'BAD_REQUEST');
+    assert.equal(body.status, 422);
+  });
+
+  test('it should return 422 when providing an invalid password', async (assert) => {
+    const {body} = await supertest(BASEURL).post('/users').send({
+      email : 'test@test.com',
+      password: 'te',
+      username: 'test'
+    }).expect(422);
     assert.equal(body.code,'BAD_REQUEST');
     assert.equal(body.status, 422);
   });
