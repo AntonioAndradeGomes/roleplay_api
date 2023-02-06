@@ -1,10 +1,11 @@
+import Database from "@ioc:Adonis/Lucid/Database";
 import { UserFactory } from "Database/factories";
 import test from "japa";
 import supertest from "supertest";
 
 const BASEURL = `http://${process.env.HOST}:${process.env.PORT}`;
 
-test.group("user", () => {
+test.group("user", (group) => {
   test("it should create an user", async (assert) => {
     //payload do user
     const userPayload = {
@@ -25,13 +26,26 @@ test.group("user", () => {
     assert.equal(body.user.avatar, userPayload.avatar);
   });
 
-  test('it should return 409 when email is already in use', async (assert) => {
+  test.only('it should return 409 when email is already in use', async (assert) => {
     const { email } = await UserFactory.create();
-    await supertest(BASEURL).post("/users").send({
+    const {body} = await supertest(BASEURL).post("/users").send({
       username: 'teste',
       email,
       password: "teste",
       avatar: 'http://images.com/image/1'
     }).expect(409);
+
+    assert.exists(body.message);
+    assert.include(body.message, 'email');
+    assert.equal(body.code, 'BAD_REQUEST');
+    assert.equal(body.status, 409);
   });
+
+  group.beforeEach(async () => {
+    await Database.beginGlobalTransaction();
+  });
+
+  group.afterEach(async  () => {
+    await Database.rollbackGlobalTransaction();
+  })
 });
