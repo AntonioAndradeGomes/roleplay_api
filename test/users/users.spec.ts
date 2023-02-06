@@ -62,31 +62,54 @@ test.group("user", (group) => {
   });
 
   test("it should return 422 when required data is not provided", async (assert) => {
-
-    const {body} = await supertest(BASEURL).post('/users').send({}).expect(422);
+    const { body } = await supertest(BASEURL)
+      .post("/users")
+      .send({})
+      .expect(422);
     console.log(body);
-    assert.equal(body.code,'BAD_REQUEST');
+    assert.equal(body.code, "BAD_REQUEST");
     assert.equal(body.status, 422);
   });
 
-  test('it should return 422 when providing an invalid email', async (assert) => {
-    const {body} = await supertest(BASEURL).post('/users').send({
-      email : 'test@',
-      password: 'test',
-      username: 'test'
-    }).expect(422);
-    assert.equal(body.code,'BAD_REQUEST');
+  test("it should return 422 when providing an invalid email", async (assert) => {
+    const { body } = await supertest(BASEURL)
+      .post("/users")
+      .send({
+        email: "test@",
+        password: "test",
+        username: "test",
+      })
+      .expect(422);
+    assert.equal(body.code, "BAD_REQUEST");
     assert.equal(body.status, 422);
   });
 
-  test('it should return 422 when providing an invalid password', async (assert) => {
-    const {body} = await supertest(BASEURL).post('/users').send({
-      email : 'test@test.com',
-      password: 'te',
-      username: 'test'
-    }).expect(422);
-    assert.equal(body.code,'BAD_REQUEST');
+  test("it should return 422 when providing an invalid password", async (assert) => {
+    const { body } = await supertest(BASEURL)
+      .post("/users")
+      .send({
+        email: "test@test.com",
+        password: "te",
+        username: "test",
+      })
+      .expect(422);
+    assert.equal(body.code, "BAD_REQUEST");
     assert.equal(body.status, 422);
+  });
+
+  test.only("it should update an user", async (assert) => {
+    const { id, password } = await UserFactory.create();
+    const email = "test@test.com";
+    const avatar = "https://avatars.githubusercontent.com/u/21224318?v=4";
+
+    const { body } = await supertest(BASEURL)
+      .put(`/users/${id}`)
+      .send({
+        email,
+        avatar,
+        password,
+      })
+      .expect(200);
   });
 
   group.beforeEach(async () => {
