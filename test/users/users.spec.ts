@@ -1,10 +1,11 @@
+import { UserFactory } from "Database/factories";
 import test from "japa";
 import supertest from "supertest";
 
 const BASEURL = `http://${process.env.HOST}:${process.env.PORT}`;
 
 test.group("user", () => {
-  test.only("it should create an user", async (assert) => {
+  test("it should create an user", async (assert) => {
     //payload do user
     const userPayload = {
       email: "teste@teste.com",
@@ -22,5 +23,15 @@ test.group("user", () => {
     assert.equal(body.user.username, userPayload.username);
     assert.notExists(body.user.password, 'Password defined');
     assert.equal(body.user.avatar, userPayload.avatar);
+  });
+
+  test('it should return 409 when email is already in use', async (assert) => {
+    const { email } = await UserFactory.create();
+    await supertest(BASEURL).post("/users").send({
+      username: 'teste',
+      email,
+      password: "teste",
+      avatar: 'http://images.com/image/1'
+    }).expect(409);
   });
 });
