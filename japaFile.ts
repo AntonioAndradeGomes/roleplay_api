@@ -10,13 +10,13 @@ process.env.ADONIS_ACE_CWD = join(__dirname)
 sourceMapSupport.install({ handleUncaughtExceptions: false })
 
 async function runMigrations() {
-  await execa.node('ace', ['migrations:run'], {
+  await execa.node('ace', ['migration:run'], {
     stdio: 'inherit',
   });
 }
 
 async function rollbackMigrations() {
-  await execa.node('ace', ['migrations:rollback'], {
+  await execa.node('ace', ['migration:rollback'], {
     stdio: 'inherit',
   });
 }
