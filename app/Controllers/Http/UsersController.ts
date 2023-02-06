@@ -11,6 +11,12 @@ export default class UsersController {
       throw new BadRequest('email already in use', 409);
     }
 
+    const userByUserName = await User.findBy('username', userPayload.username);
+
+    if(userByUserName){
+      throw new BadRequest('username already in use', 409);
+    }
+
     const user = await User.create(userPayload);
     return response.created({user});
   }

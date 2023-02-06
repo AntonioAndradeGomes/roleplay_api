@@ -26,7 +26,7 @@ test.group("user", (group) => {
     assert.equal(body.user.avatar, userPayload.avatar);
   });
 
-  test.only('it should return 409 when email is already in use', async (assert) => {
+  test('it should return 409 when email is already in use', async (assert) => {
     const { email } = await UserFactory.create();
     const {body} = await supertest(BASEURL).post("/users").send({
       username: 'teste',
@@ -37,6 +37,21 @@ test.group("user", (group) => {
 
     assert.exists(body.message);
     assert.include(body.message, 'email');
+    assert.equal(body.code, 'BAD_REQUEST');
+    assert.equal(body.status, 409);
+  });
+
+  test.only('it should return 409 when username is already in use', async (assert) => {
+    const { username } = await UserFactory.create();
+    const {body} = await supertest(BASEURL).post("/users").send({
+      username,
+      email: 'teste@teste.com',
+      password: "teste",
+      avatar: 'http://images.com/image/1'
+    }).expect(409);
+
+    assert.exists(body.message);
+    assert.include(body.message, 'username');
     assert.equal(body.code, 'BAD_REQUEST');
     assert.equal(body.status, 409);
   });
