@@ -21,7 +21,7 @@ test.group("Password", (group) => {
         address: "no-reply@roleplay.com",
       });
       assert.equal(message.subject, "Roleplay: Recuperação de senha");
-      assert.equal(message.text, 'Clique no link abaixo para redefinir sua senha.');
+      assert.include(message.html!, user.username);
     });
 
     await supertest(BASEURL)
