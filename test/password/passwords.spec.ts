@@ -2,7 +2,7 @@ import Database from "@ioc:Adonis/Lucid/Database";
 import { UserFactory } from "Database/factories";
 import test from "japa";
 import supertest from "supertest";
-//import Hash from "@ioc:Adonis/Core/Hash";
+import Hash from "@ioc:Adonis/Core/Hash";
 import Mail from "@ioc:Adonis/Addons/Mail";
 
 const BASEURL = `http://${process.env.HOST}:${process.env.PORT}`;
@@ -35,7 +35,6 @@ test.group("Password", (group) => {
     Mail.restore();
   });
 
-
   //Todo: Teste não passa nem no code da professora do curso
   /*test.only("it should create a reset password token", async (assert) => {
     const user = await UserFactory.create();
@@ -52,11 +51,38 @@ test.group("Password", (group) => {
     assert.isNotEmpty(tokens);
   });*/
 
-  test.only('it should return 422 when required data is not provided or data is invalid', async (assert) => {
-    const { body } = await supertest(BASEURL).post('/forgot-password').send({}).expect(422)
-    assert.equal(body.code, 'BAD_REQUEST')
-    assert.equal(body.status, 422)
-  })
+  test("it should return 422 when required data is not provided or data is invalid", async (assert) => {
+    const { body } = await supertest(BASEURL)
+      .post("/forgot-password")
+      .send({})
+      .expect(422);
+    assert.equal(body.code, "BAD_REQUEST");
+    assert.equal(body.status, 422);
+  });
+
+  test("it should be able to resent password", async (assert) => {
+    const user = await UserFactory.create();
+    const { token } = await user.related("tokens").create({ token: "token" });
+    await supertest(BASEURL)
+      .post("/reset-password")
+      .send({
+        token,
+        password: "123456789",
+      })
+      .expect(204);
+    await user.refresh();
+    const check = await Hash.verify(user.password, "123456789");
+    assert.isTrue(check);
+  });
+
+  test.only("it should return 422 when required data is not provided or data is invalid", async (assert) => {
+    const { body } = await supertest(BASEURL)
+      .post("/reset-password")
+      .send({})
+      .expect(422);
+    assert.equal(body.code, "BAD_REQUEST");
+    assert.equal(body.status, 422);
+  });
 
   group.beforeEach(async () => {
     await Database.beginGlobalTransaction();
