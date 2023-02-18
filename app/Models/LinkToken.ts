@@ -13,7 +13,7 @@ export default class LinkToken extends BaseModel {
   public userId: number;
 
   @belongsTo(() => User, {
-    foreignKey: "userId",
+    foreignKey: 'userId',
   })
   public user: BelongsTo<typeof User>;
 
