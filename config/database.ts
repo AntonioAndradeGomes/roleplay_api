@@ -39,11 +39,6 @@ const databaseConfig: DatabaseConfig = {
       connection: {
         filename: Application.tmpPath('db.sqlite3'),
       },
-      pool: {
-        afterCreate: (conn, cb) => {
-          conn.run('PRAGMA foreign_keys=true', cb)
-        }
-      },
       migrations: {
         naturalSort: true,
       },

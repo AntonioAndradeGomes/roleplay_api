@@ -1,25 +1,26 @@
-import { DateTime } from "luxon";
-import { BaseModel, BelongsTo, belongsTo, column } from "@ioc:Adonis/Lucid/Orm";
-import User from "./User";
+import { BaseModel, belongsTo, BelongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import { DateTime } from 'luxon'
+
+import User from './User'
 
 export default class LinkToken extends BaseModel {
   @column({ isPrimary: true })
-  public id: number;
+  public id: number
 
   @column()
-  public token: string;
+  public token: string
 
-  @column({ columnName: "user_id" })
-  public userId: number;
+  @column({ columnName: 'user_id' })
+  public userId: number
 
   @belongsTo(() => User, {
     foreignKey: 'userId',
   })
-  public user: BelongsTo<typeof User>;
+  public user: BelongsTo<typeof User>
 
   @column.dateTime({ autoCreate: true })
-  public createdAt: DateTime;
+  public createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updatedAt: DateTime;
+  public updatedAt: DateTime
 }
