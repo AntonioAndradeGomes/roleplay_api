@@ -24,6 +24,33 @@ test.group("Session", (group) => {
     assert.equal(body.user.id, id);
   });
 
+  /*
+    {
+      user: {
+
+      },
+      token: {
+
+      }
+    }
+  */
+  test.only('it should return an api token when session in created', async (assert) => {
+    const plainPassword = "test";
+    const { id, email } = await UserFactory.merge({
+      password: plainPassword,
+    }).create();
+
+    const {body} = await supertest(BASEURL)
+      .post("/sessions")
+      .send({
+        email,
+        password: plainPassword,
+      })
+      .expect(201);
+
+    assert.isDefined(body.token, 'Token undefined');
+    assert.equal(body.user.id, id);
+  });
 
 
   group.beforeEach(async () => {
