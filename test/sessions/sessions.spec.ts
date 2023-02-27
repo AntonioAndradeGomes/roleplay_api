@@ -62,7 +62,7 @@ test.group("Session", (group) => {
     assert.equal(body.status, 400);
   });
 
-  test.only("it should return 400 when credentials are invalid", async (assert) => {
+  test("it should return 400 when credentials are invalid", async (assert) => {
     const { email } = await UserFactory.create();
     const { body } = await supertest(BASEURL)
       .post("/sessions")
@@ -72,6 +72,60 @@ test.group("Session", (group) => {
     assert.equal(body.status, 400);
     assert.equal(body.message, 'invalid credentials');
   });
+
+  test("it should return 200 when user signs out", async () => {
+    const plainPassword = "test";
+
+    const { email } = await UserFactory.merge({
+      password: plainPassword,
+    }).create();
+
+    const { body } = await supertest(BASEURL)
+      .post("/sessions")
+      .send({
+        email,
+        password: plainPassword,
+      })
+      .expect(201);
+
+    const apitoken = body.token;
+
+    await supertest(BASEURL)
+      .delete("/sessions")
+      .set('Authorization', `Bearer ${apitoken.token}`)
+      .expect(200);
+  });
+
+  test.only('it should revoke token when user signs out', async (assert) => {
+    const plainPassword = "test";
+    const { email } = await UserFactory.merge({
+      password: plainPassword,
+    }).create();
+
+    const { body } = await supertest(BASEURL)
+      .post("/sessions")
+      .send({
+        email,
+        password: plainPassword,
+      })
+      .expect(201);
+
+    const apitoken = body.token;
+
+    const tokenBeforeSignout = await Database.query().select('*').from('api_tokens');
+
+    console.log(tokenBeforeSignout);
+
+    await supertest(BASEURL)
+      .delete("/sessions")
+      .set('Authorization', `Bearer ${apitoken.token}`)
+      .expect(200);
+
+
+    const token = await Database.query().select('*').from('api_tokens');
+    assert.isEmpty(token);
+  });
+
 
   group.beforeEach(async () => {
     await Database.beginGlobalTransaction();
