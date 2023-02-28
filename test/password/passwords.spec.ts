@@ -36,8 +36,8 @@ test.group('Password', (group) => {
     Mail.restore()
   })
 
-  //Todo: esperar resposta da professor que nem o dela passa
-  /*test('it should create a reset password token', async (assert) => {
+  //Ajustado
+  test('it should create a reset password token', async (assert) => {
     const user = await UserFactory.create()
 
     await supertest(BASE_URL)
@@ -50,7 +50,7 @@ test.group('Password', (group) => {
 
     const tokens = await user.related('tokens').query()
     assert.isNotEmpty(tokens)
-  })*/
+  }).timeout(0);
 
   test('it should return 422 when required data is not provided or data is invalid', async (assert) => {
     const { body } = await supertest(BASE_URL).post('/forgot-password').send({}).expect(422)
