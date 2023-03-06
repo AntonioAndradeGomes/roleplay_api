@@ -84,6 +84,8 @@ test.group("Group Request", (group) => {
       .get(`/groups/${group.id}/requests?master=${master.id}`)
       .expect(200);
 
+      console.log(body.groupRequests);
+
     assert.exists(body.groupRequests, "GroupRequests undefined");
     assert.equal(body.groupRequests.length, 1);
     assert.equal(body.groupRequests[0].id, groupRequest.id);
