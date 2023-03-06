@@ -17,4 +17,4 @@ Route.post("/sessions", "SessionsController.store");
 Route.delete("/sessions", "SessionsController.destroy");
 
 //tables -> messas
-Route.post("/groups", 'GroupsController.store');
+Route.post("/groups", "GroupsController.store").middleware("auth");

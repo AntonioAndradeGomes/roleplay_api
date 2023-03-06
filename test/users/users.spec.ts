@@ -113,7 +113,7 @@ test.group("User", (group) => {
       .send({
         email,
         avatar,
-        password : user.password,
+        password: user.password,
       })
       .expect(200);
 
@@ -158,7 +158,7 @@ test.group("User", (group) => {
     const { id, password, avatar } = await UserFactory.create();
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
-      .set('Authorization', `Bearer ${token}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
         password,
         avatar,
@@ -173,7 +173,7 @@ test.group("User", (group) => {
     const { id, email, avatar } = await UserFactory.create();
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
-      .set('Authorization', `Bearer ${token}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
         email,
         avatar,
@@ -188,7 +188,7 @@ test.group("User", (group) => {
     const { id, email, password } = await UserFactory.create();
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
-      .set('Authorization', `Bearer ${token}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
         email,
         password,
@@ -215,6 +215,12 @@ test.group("User", (group) => {
 
     token = body.token.token;
     user = newuser;
+  });
+
+  group.after(async () => {
+    await supertest(BASE_URL)
+      .delete("/sessions")
+      .set("Autorization", `Bearer ${token}`);
   });
 
   group.beforeEach(async () => {
