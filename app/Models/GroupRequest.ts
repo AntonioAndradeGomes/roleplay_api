@@ -13,7 +13,7 @@ export default class GroupRequest extends BaseModel {
   public userId: number;
 
   @belongsTo(() => User, {
-    foreignKey: "user_id",
+    foreignKey: "userId",
   })
   public user: BelongsTo<typeof User>;
 
@@ -21,7 +21,7 @@ export default class GroupRequest extends BaseModel {
   public groupId: number;
 
   @belongsTo(() => Group, {
-    foreignKey: "group_id",
+    foreignKey: "groupId",
   })
   public group: BelongsTo<typeof Group>;
 
