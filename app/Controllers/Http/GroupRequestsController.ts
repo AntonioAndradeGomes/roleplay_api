@@ -1,4 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import BadRequestException from 'App/Exceptions/BadRequestException';
 import GroupRequest from 'App/Models/GroupRequest';
 
 export default class GroupRequestsController {
@@ -6,6 +7,11 @@ export default class GroupRequestsController {
 
     const groupId = request.param('groupId') as number;
     const userId = auth.user!.id;
+
+    const existingGroupRequest = await GroupRequest.query().where('group_id', groupId).andWhere('user_id', userId).first();
+    if(existingGroupRequest){
+      throw new BadRequestException('group request already exists', 409);
+    }
 
     const groupRequest = await GroupRequest.create({groupId, userId});
     await groupRequest.refresh();
