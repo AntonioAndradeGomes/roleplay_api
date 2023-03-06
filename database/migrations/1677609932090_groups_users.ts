@@ -1,20 +1,23 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
-export default class LinkTokens extends BaseSchema {
-  protected tableName = "link_tokens";
+export default class GroupsUsers extends BaseSchema {
+  protected tableName = "groups_users";
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments("id").primary();
-      table.string("token", 255).notNullable().unique();
+      table.primary(["user_id", "group_id"]);
       table
         .integer("user_id")
         .unsigned()
         .references("id")
         .inTable("users")
         .notNullable();
-      table.timestamp("created_at", { useTz: true });
-      table.timestamp("updated_at", { useTz: true });
+      table
+        .integer("group_id")
+        .unsigned()
+        .references("id")
+        .inTable("groups")
+        .notNullable();
     });
   }
 
