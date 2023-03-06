@@ -32,4 +32,8 @@ export default class GroupRequestsController {
     await groupRequest.refresh();
     return response.created({ groupRequest });
   }
+
+  public async index({ request, response }: HttpContextContract) {
+    return response.ok({});
+  }
 }
