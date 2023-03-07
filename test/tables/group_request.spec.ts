@@ -112,28 +112,40 @@ test.group("Group Request", (group) => {
     assert.equal(body.groupRequests.length, 0);
   });
 
-  test('it should return 422 when master is not provided', async (assert) => {
+  test("it should return 422 when master is not provided", async (assert) => {
     const master = await UserFactory.create();
     const group = await GroupFactory.merge({ master: master.id }).create();
 
     const { body } = await supertest(BASEURL)
-    .get(`/groups/${group.id}/requests`)
-    .expect(422);
+      .get(`/groups/${group.id}/requests`)
+      .expect(422);
 
     assert.exists(body.code, "BAD_REQUEST");
     assert.equal(body.status, 422);
   });
 
-  test.only('it should accept a group request', async (assert) => {
+  test.only("it should accept a group request", async (assert) => {
     const { id } = await UserFactory.create();
     const group = await GroupFactory.merge({ master: id }).create();
 
-    const {body} = await supertest(BASEURL)
+    const { body } = await supertest(BASEURL)
       .post(`/groups/${group.id}/requests`)
       .set("Authorization", `Bearer ${token}`)
       .send({});
 
-    await supertest(BASEURL).post(`/groups/${group.id}/requests/${body.groupRequest.id}/accept`).expect(200);
+    const response = await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests/${body.groupRequest.id}/accept`)
+      .expect(200);
+
+    assert.exists(response.body.groupRequest, "GroupRequest undefined");
+    assert.equal(response.body.groupRequest.userId, user.id);
+    assert.equal(response.body.groupRequest.groupId, group.id);
+    assert.equal(response.body.groupRequest.status, "ACCEPTED");
+
+    await group.load('players');
+    assert.isNotEmpty(group.players);
+    assert.equal(group.players.length, 1);
+    assert.equal(group.players[0].id, user.id);
   });
 
   group.before(async () => {

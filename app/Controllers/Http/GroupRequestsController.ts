@@ -7,17 +7,17 @@ export default class GroupRequestsController {
   public async index({ request, response }: HttpContextContract) {
     const { master } = request.qs();
 
-    if(!master){
-      throw new BadRequestException('master query should be provided', 422);
+    if (!master) {
+      throw new BadRequestException("master query should be provided", 422);
     }
 
     const groupRequests = await GroupRequest.query()
       .select("id", "groupId", "userId", "status")
       .preload("group", (query) => {
-        query.select('name', 'master')
+        query.select("name", "master");
       })
       .preload("user", (query) => {
-        query.select('username', 'id')
+        query.select("username", "id");
       })
       .whereHas("group", (query) => {
         query.where("master", Number(master));
@@ -55,7 +55,17 @@ export default class GroupRequestsController {
     return response.created({ groupRequest });
   }
 
-  public async accept({request, response}: HttpContextContract) {
-    return response.ok({});
+  public async accept({ request, response }: HttpContextContract) {
+    const groupId = request.param("groupId") as number;
+    const requestId = request.param("requestId") as number;
+    const groupRequest = await GroupRequest.query()
+      .where("id", requestId)
+      .andWhere("groupId", groupId).firstOrFail();
+
+    const updatedGroupRequest = await groupRequest.merge({status: 'ACCEPTED'}).save();
+
+    await groupRequest.load('group');
+    await groupRequest.group.related('players').attach([groupRequest.userId]);
+    return response.ok({ groupRequest: updatedGroupRequest });
   }
 }
