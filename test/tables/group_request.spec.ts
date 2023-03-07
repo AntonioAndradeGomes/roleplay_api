@@ -124,7 +124,7 @@ test.group("Group Request", (group) => {
     assert.equal(body.status, 422);
   });
 
-  test.only("it should accept a group request", async (assert) => {
+  test("it should accept a group request", async (assert) => {
     const { id } = await UserFactory.create();
     const group = await GroupFactory.merge({ master: id }).create();
 
@@ -142,10 +142,44 @@ test.group("Group Request", (group) => {
     assert.equal(response.body.groupRequest.groupId, group.id);
     assert.equal(response.body.groupRequest.status, "ACCEPTED");
 
-    await group.load('players');
+    await group.load("players");
     assert.isNotEmpty(group.players);
     assert.equal(group.players.length, 1);
     assert.equal(group.players[0].id, user.id);
+  });
+
+  test("it should return 404 when providing an unexisting group", async (assert) => {
+    const master = await UserFactory.create();
+    const group = await GroupFactory.merge({ master: master.id }).create();
+
+    const { body } = await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({});
+
+    const response = await supertest(BASEURL)
+      .post(`/groups/123/requests/${body.groupRequest.id}/accept`)
+      .expect(404);
+
+    assert.equal(response.body.code, "BAD_REQUEST");
+    assert.equal(response.body.status, 404);
+  });
+
+  test("it should return 404 when providing an unexisting group request", async (assert) => {
+    const master = await UserFactory.create();
+    const group = await GroupFactory.merge({ master: master.id }).create();
+
+    await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({});
+
+    const response = await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests/123/accept`)
+      .expect(404);
+
+    assert.equal(response.body.code, "BAD_REQUEST");
+    assert.equal(response.body.status, 404);
   });
 
   group.before(async () => {
