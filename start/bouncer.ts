@@ -5,8 +5,9 @@
  * file.
  */
 
-import Bouncer from '@ioc:Adonis/Addons/Bouncer'
-import User from 'App/Models/User'
+import Bouncer from "@ioc:Adonis/Addons/Bouncer";
+import GroupRequest from "App/Models/GroupRequest";
+import User from "App/Models/User";
 
 /*
 |--------------------------------------------------------------------------
@@ -30,9 +31,19 @@ import User from 'App/Models/User'
 | NOTE: Always export the "actions" const from this file
 |****************************************************************
 */
-export const { actions } = Bouncer.define('updateUser', (user: User, updatedUser: User) => {
-  return user.id === updatedUser.id;
-});
+export const { actions } = Bouncer.define(
+  "updateUser",
+  (user: User, updatedUser: User) => {
+    return user.id === updatedUser.id;
+  }
+)
+  .define("acceptGroupRequest", (user: User, groupRequest: GroupRequest) => {
+
+    return Number(user.id) === Number(groupRequest.group.master);
+  })
+  .define("rejectGroupRequest", (user: User, groupRequest: GroupRequest) => {
+    return Number(user.id) === Number(groupRequest.group.master);
+  });
 
 /*
 |--------------------------------------------------------------------------
@@ -57,4 +68,4 @@ export const { actions } = Bouncer.define('updateUser', (user: User, updatedUser
 | NOTE: Always export the "policies" const from this file
 |****************************************************************
 */
-export const { policies } = Bouncer.registerPolicies({})
+export const { policies } = Bouncer.registerPolicies({});
