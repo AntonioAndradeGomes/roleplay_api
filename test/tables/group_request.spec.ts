@@ -112,7 +112,7 @@ test.group("Group Request", (group) => {
     assert.equal(body.groupRequests.length, 0);
   });
 
-  test.only('it should return 422 when master is not provided', async (assert) => {
+  test('it should return 422 when master is not provided', async (assert) => {
     const master = await UserFactory.create();
     const group = await GroupFactory.merge({ master: master.id }).create();
 
@@ -122,6 +122,18 @@ test.group("Group Request", (group) => {
 
     assert.exists(body.code, "BAD_REQUEST");
     assert.equal(body.status, 422);
+  });
+
+  test.only('it should accept a group request', async (assert) => {
+    const { id } = await UserFactory.create();
+    const group = await GroupFactory.merge({ master: id }).create();
+
+    const {body} = await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({});
+
+    await supertest(BASEURL).post(`/groups/${group.id}/requests/${body.groupRequest.id}/accept`).expect(200);
   });
 
   group.before(async () => {

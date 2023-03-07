@@ -26,3 +26,8 @@ Route.post(
 ).middleware("auth");
 
 Route.get("/groups/:groupId/requests", "GroupRequestsController.index");
+
+Route.post(
+  "/groups/:groupId/requests/:requestId/accept",
+  "GroupRequestsController.accept"
+);
