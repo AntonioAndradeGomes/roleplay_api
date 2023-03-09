@@ -1,4 +1,5 @@
 import Database from "@ioc:Adonis/Lucid/Database";
+import Group from "App/Models/Group";
 import User from "App/Models/User";
 import { GroupFactory, UserFactory } from "Database/factories";
 import test from "japa";
@@ -81,7 +82,7 @@ test.group("Group", (group) => {
   });
 
   //DELETE /groups/id_mesa/players/id_user
-  test.only("it should remove user from group", async (assert) => {
+  test("it should remove user from group", async (assert) => {
     const group = await GroupFactory.merge({ master: user.id }).create();
 
     const plainPassword = "test";
@@ -111,6 +112,30 @@ test.group("Group", (group) => {
 
     await group.load("players");
     assert.isEmpty(group.players);
+  });
+
+  test.only("it should not remove the master of the group", async (assert) => {
+    const groupPayload = {
+      name: "test",
+      description: "test",
+      schedule: "test",
+      location: "test",
+      chronic: "test",
+      master: user.id,
+    };
+    const { body } = await supertest(BASEURL)
+      .post("/groups")
+      .set("Authorization", `Bearer ${token}`)
+      .send(groupPayload);
+
+    const group = body.group;
+    await supertest(BASEURL)
+      .delete(`/groups/${group.id}/players/${user.id}`)
+      .expect(400);
+
+    const groupModel =await Group.findOrFail(group.id);
+    await groupModel.load("players");
+    assert.isNotEmpty(group.players);
   });
 
   group.before(async () => {
