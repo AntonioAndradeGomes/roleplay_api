@@ -47,24 +47,6 @@ test.group("Group", (group) => {
     assert.equal(body.status, 422);
   });
 
-  group.before(async () => {
-    const plainPassword = "test";
-    const newuser = await UserFactory.merge({
-      password: plainPassword,
-    }).create();
-
-    const { body } = await supertest(BASEURL)
-      .post("/sessions")
-      .send({
-        email: newuser.email,
-        password: plainPassword,
-      })
-      .expect(201);
-
-    token = body.token.token;
-    user = newuser;
-  });
-
   test("it should update a group", async (assert) => {
     const master = await UserFactory.create();
     const group = await GroupFactory.merge({ master: master.id }).create();
@@ -89,13 +71,64 @@ test.group("Group", (group) => {
     assert.equal(body.group.chronic, payload.chronic);
   });
 
-  test.only("it should return 404 when providing an unexisting group for update", async (assert) => {
+  test("it should return 404 when providing an unexisting group for update", async (assert) => {
     const response = await supertest(BASEURL)
       .patch("/groups/1")
       .send({})
       .expect(404);
     assert.equal(response.body.code, "BAD_REQUEST");
     assert.equal(response.body.status, 404);
+  });
+
+  //DELETE /groups/id_mesa/players/id_user
+  test.only("it should remove user from group", async (assert) => {
+    const group = await GroupFactory.merge({ master: user.id }).create();
+
+    const plainPassword = "test";
+    const newuser = await UserFactory.merge({
+      password: plainPassword,
+    }).create();
+    const response = await supertest(BASEURL).post("/sessions").send({
+      email: newuser.email,
+      password: plainPassword,
+    });
+
+    const playertoken = response.body.token.token;
+
+    const { body } = await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests`)
+      .set("Authorization", `Bearer ${playertoken}`)
+      .send({});
+
+    await supertest(BASEURL)
+      .post(`/groups/${group.id}/requests/${body.groupRequest.id}/accept`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    await supertest(BASEURL)
+      .delete(`/groups/${group.id}/players/${newuser.id}`)
+      .expect(200);
+
+    await group.load("players");
+    assert.isEmpty(group.players);
+  });
+
+  group.before(async () => {
+    const plainPassword = "test";
+    const newuser = await UserFactory.merge({
+      password: plainPassword,
+    }).create();
+
+    const { body } = await supertest(BASEURL)
+      .post("/sessions")
+      .send({
+        email: newuser.email,
+        password: plainPassword,
+      })
+      .expect(201);
+
+    token = body.token.token;
+    user = newuser;
   });
 
   group.after(async () => {
