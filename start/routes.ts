@@ -19,14 +19,15 @@ Route.delete("/sessions", "SessionsController.destroy");
 //tables -> messas
 Route.post("/groups", "GroupsController.store").middleware("auth");
 
-Route.delete("/groups/:id", "GroupsController.destroy");
+Route.delete("/groups/:id", "GroupsController.destroy").middleware("auth");
 
-Route.patch("/groups/:id", "GroupsController.update");
-
-
+Route.patch("/groups/:id", "GroupsController.update").middleware("auth");
 
 //remover um player da mesa
-Route.delete('/groups/:groupId/players/:playerId', "GroupsController.removePlayer")
+Route.delete(
+  "/groups/:groupId/players/:playerId",
+  "GroupsController.removePlayer"
+).middleware("auth");
 
 Route.get(
   "/groups/:groupId/requests",

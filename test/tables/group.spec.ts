@@ -49,8 +49,7 @@ test.group("Group", (group) => {
   });
 
   test("it should update a group", async (assert) => {
-    const master = await UserFactory.create();
-    const group = await GroupFactory.merge({ master: master.id }).create();
+    const group = await GroupFactory.merge({ master: user.id }).create();
     const payload = {
       name: "test",
       description: "test",
@@ -61,6 +60,7 @@ test.group("Group", (group) => {
 
     const { body } = await supertest(BASEURL)
       .patch(`/groups/${group.id}`)
+      .set("Authorization", `Bearer ${token}`)
       .send(payload)
       .expect(200);
 
@@ -75,6 +75,7 @@ test.group("Group", (group) => {
   test("it should return 404 when providing an unexisting group for update", async (assert) => {
     const response = await supertest(BASEURL)
       .patch("/groups/1")
+      .set("Authorization", `Bearer ${token}`)
       .send({})
       .expect(404);
     assert.equal(response.body.code, "BAD_REQUEST");
@@ -108,6 +109,7 @@ test.group("Group", (group) => {
 
     await supertest(BASEURL)
       .delete(`/groups/${group.id}/players/${newuser.id}`)
+      .set("Authorization", `Bearer ${token}`)
       .expect(200);
 
     await group.load("players");
@@ -131,6 +133,7 @@ test.group("Group", (group) => {
     const group = body.group;
     await supertest(BASEURL)
       .delete(`/groups/${group.id}/players/${user.id}`)
+      .set("Authorization", `Bearer ${token}`)
       .expect(400);
 
     const groupModel = await Group.findOrFail(group.id);
@@ -154,7 +157,11 @@ test.group("Group", (group) => {
 
     const group = body.group;
 
-    await supertest(BASEURL).delete(`/groups/${group.id}`).send({}).expect(200);
+    await supertest(BASEURL)
+      .delete(`/groups/${group.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({})
+      .expect(200);
 
     const emptyGroup = await Database.query()
       .from("groups")
@@ -162,13 +169,17 @@ test.group("Group", (group) => {
 
     assert.isEmpty(emptyGroup);
     //consultando os relacionamentos
-    const players = await Database.query().from('groups_users');
+    const players = await Database.query().from("groups_users");
     assert.isEmpty(players);
   });
 
-  test.only('it should return 404 providing an unexisting group for deletion', async (assert) => {
-    const {body} = await supertest(BASEURL).delete('/groups/123').send({}).expect(404);
-    assert.equal(body.code, 'BAD_REQUEST');
+  test("it should return 404 providing an unexisting group for deletion", async (assert) => {
+    const { body } = await supertest(BASEURL)
+      .delete("/groups/123")
+      .set("Authorization", `Bearer ${token}`)
+      .send({})
+      .expect(404);
+    assert.equal(body.code, "BAD_REQUEST");
     assert.equal(body.status, 404);
   });
 
