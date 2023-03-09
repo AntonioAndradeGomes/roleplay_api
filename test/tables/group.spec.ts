@@ -138,7 +138,7 @@ test.group("Group", (group) => {
     assert.isNotEmpty(group.players);
   });
 
-  test.only("it should remove the group", async (assert) => {
+  test("it should remove the group", async (assert) => {
     const groupPayload = {
       name: "test",
       description: "test",
@@ -164,6 +164,12 @@ test.group("Group", (group) => {
     //consultando os relacionamentos
     const players = await Database.query().from('groups_users');
     assert.isEmpty(players);
+  });
+
+  test.only('it should return 404 providing an unexisting group for deletion', async (assert) => {
+    const {body} = await supertest(BASEURL).delete('/groups/123').send({}).expect(404);
+    assert.equal(body.code, 'BAD_REQUEST');
+    assert.equal(body.status, 404);
   });
 
   group.before(async () => {
