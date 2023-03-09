@@ -19,7 +19,7 @@ Route.delete("/sessions", "SessionsController.destroy");
 //tables -> messas
 Route.post("/groups", "GroupsController.store").middleware("auth");
 
-//solicitação para entrar nas mesa
+Route.patch("/groups/:id", "GroupsController.update")
 
 Route.get(
   "/groups/:groupId/requests",

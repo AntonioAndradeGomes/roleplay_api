@@ -6,8 +6,16 @@ export default class GroupsController {
   public async store({ request, response }: HttpContextContract) {
     const groupPayload = await request.validate(CreateGroupValidator);
     const group = await Group.create(groupPayload);
-    await group.related('players').attach([groupPayload.master]);
-    await group.load('players');
+    await group.related("players").attach([groupPayload.master]);
+    await group.load("players");
     return response.created({ group });
+  }
+
+  public async update({ request, response }: HttpContextContract) {
+    const id = request.param("id");
+    const payload = request.all();
+    const group = await Group.findOrFail(id);
+    const updatedGroup = await group.merge(payload).save();
+    return response.ok({ group: updatedGroup });
   }
 }
