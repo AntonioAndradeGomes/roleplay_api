@@ -6,46 +6,12 @@ import CreateGroupValidator from "App/Validators/CreateGroupValidator";
 export default class GroupsController {
   public async index({ request, response }: HttpContextContract) {
     const { text, ["user"]: userId } = request.qs();
-    const groups = await this.filterByQyeryString(userId, text);
+    //const groups = await this.filterByQyeryString(userId, text);
+    const page = request.input('page', 1);
+    const limit = request.input('limit', 5);
+    const groupsQuery = this.filterByQyeryString(userId, text);
+    const groups = await groupsQuery.paginate(page, limit);
     return response.ok({ groups });
-  }
-
-  private filterByQyeryString(userId: number, text: string) {
-    if (userId && text) {
-      return this.filterByUserAndText(userId, text);
-    } else if (userId) {
-      return this.filterByUser(userId);
-    } else if (text) {
-      return this.filterByText(text);
-    } else {
-      return this.all();
-    }
-  }
-
-  private all() {
-    return Group.query().preload("players").preload("masterUser");
-  }
-
-  private filterByUser(userId: number) {
-    return Group.query()
-      .preload("players")
-      .preload("masterUser")
-      .withScopes((scope) => scope.withPlayer(userId));
-  }
-
-  private filterByText(text: string) {
-    return Group.query()
-      .preload("players")
-      .preload("masterUser")
-      .withScopes((scope) => scope.withText(text));
-  }
-
-  private filterByUserAndText(userId: number, text: string) {
-    return Group.query()
-      .preload("players")
-      .preload("masterUser")
-      .withScopes((scope) => scope.withPlayer(userId))
-      .withScopes((scope) => scope.withText(text));
   }
 
   public async store({ request, response }: HttpContextContract) {
@@ -84,5 +50,43 @@ export default class GroupsController {
     await bouncer.authorize("deleteGroup", group);
     await group.delete();
     return response.ok({});
+  }
+
+  private filterByQyeryString(userId: number, text: string) {
+    if (userId && text) {
+      return this.filterByUserAndText(userId, text);
+    } else if (userId) {
+      return this.filterByUser(userId);
+    } else if (text) {
+      return this.filterByText(text);
+    } else {
+      return this.all();
+    }
+  }
+
+  private all() {
+    return Group.query().preload("players").preload("masterUser");
+  }
+
+  private filterByUser(userId: number) {
+    return Group.query()
+      .preload("players")
+      .preload("masterUser")
+      .withScopes((scope) => scope.withPlayer(userId));
+  }
+
+  private filterByText(text: string) {
+    return Group.query()
+      .preload("players")
+      .preload("masterUser")
+      .withScopes((scope) => scope.withText(text));
+  }
+
+  private filterByUserAndText(userId: number, text: string) {
+    return Group.query()
+      .preload("players")
+      .preload("masterUser")
+      .withScopes((scope) => scope.withPlayer(userId))
+      .withScopes((scope) => scope.withText(text));
   }
 }
