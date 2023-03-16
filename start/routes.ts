@@ -17,6 +17,8 @@ Route.post("/sessions", "SessionsController.store");
 Route.delete("/sessions", "SessionsController.destroy");
 
 //tables -> messas
+Route.get("/groups", "GroupsController.index").middleware('auth');
+
 Route.post("/groups", "GroupsController.store").middleware("auth");
 
 Route.delete("/groups/:id", "GroupsController.destroy").middleware("auth");

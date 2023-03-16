@@ -12,7 +12,7 @@ export default class Groups extends BaseSchema {
       table.string("schedule").notNullable();
       table.string("location").notNullable();
       table
-        .string("master")
+        .integer("master")
         .unsigned()
         .references("id")
         .inTable("users")
