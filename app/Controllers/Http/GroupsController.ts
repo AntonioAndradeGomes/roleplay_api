@@ -4,10 +4,21 @@ import Group from "App/Models/Group";
 import CreateGroupValidator from "App/Validators/CreateGroupValidator";
 
 export default class GroupsController {
+  public async index({ request, response }: HttpContextContract) {
+    const { ["user"]: userId } = request.qs();
+    let groups = [] as any;
+    if (!userId) {
+      groups = await Group.query().preload("players").preload("masterUser");
+    } else {
+      groups = await Group.query()
+        .preload("players")
+        .preload("masterUser")
+        .whereHas("players", (query) => {
+          query.where("id", userId);
+        });
+    }
 
-  public async index({request, response}: HttpContextContract){
-    const groups = await Group.query().preload('players').preload('masterUser');
-    return response.ok({groups});
+    return response.ok({ groups });
   }
 
   public async store({ request, response }: HttpContextContract) {
