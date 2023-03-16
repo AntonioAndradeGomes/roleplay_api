@@ -323,7 +323,7 @@ test.group("Group", (group) => {
     assert.equal(body.groups[0].players[0].username, user.username);
   });
 
-  test.only("it should return all groups by user id and description", async (assert) => {
+  test("it should return all groups by user id and description", async (assert) => {
     const groupPayload = {
       name: "123",
       description: "test",
@@ -346,6 +346,90 @@ test.group("Group", (group) => {
 
     const { body } = await supertest(BASEURL)
       .get(`/groups?user=${user.id}&text=es`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    assert.exists(body.groups, "Groups undefined");
+    assert.equal(body.groups.length, 1);
+    assert.equal(body.groups[0].id, group.id);
+    assert.equal(body.groups[0].name, group.name);
+    assert.equal(body.groups[0].description, group.description);
+    assert.equal(body.groups[0].location, group.location);
+    assert.equal(body.groups[0].schedule, group.schedule);
+    assert.exists(body.groups[0].masterUser, "Master undefined");
+    assert.equal(body.groups[0].masterUser.id, user.id);
+    assert.equal(body.groups[0].masterUser.username, user.username);
+    assert.isNotEmpty(body.groups[0].players, "Empty players");
+    assert.equal(body.groups[0].players[0].id, user.id);
+    assert.equal(body.groups[0].players[0].email, user.email);
+    assert.equal(body.groups[0].players[0].username, user.username);
+  });
+
+  test("it should return all groups by name", async (assert) => {
+    const groupPayload = {
+      name: "test",
+      description: "123",
+      schedule: "test",
+      location: "test",
+      chronic: "test",
+      master: user.id,
+    };
+    const response = await supertest(BASEURL)
+      .post("/groups")
+      .set("Authorization", `Bearer ${token}`)
+      .send(groupPayload)
+      .expect(201);
+    await supertest(BASEURL)
+      .post("/groups")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ ...groupPayload, name: "12345", description: "123456789" })
+      .expect(201);
+    const group = response.body.group;
+
+    const { body } = await supertest(BASEURL)
+      .get(`/groups?text=es`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200);
+
+    assert.exists(body.groups, "Groups undefined");
+    assert.equal(body.groups.length, 1);
+    assert.equal(body.groups[0].id, group.id);
+    assert.equal(body.groups[0].name, group.name);
+    assert.equal(body.groups[0].description, group.description);
+    assert.equal(body.groups[0].location, group.location);
+    assert.equal(body.groups[0].schedule, group.schedule);
+    assert.exists(body.groups[0].masterUser, "Master undefined");
+    assert.equal(body.groups[0].masterUser.id, user.id);
+    assert.equal(body.groups[0].masterUser.username, user.username);
+    assert.isNotEmpty(body.groups[0].players, "Empty players");
+    assert.equal(body.groups[0].players[0].id, user.id);
+    assert.equal(body.groups[0].players[0].email, user.email);
+    assert.equal(body.groups[0].players[0].username, user.username);
+  });
+
+  test("it should return all groups by description", async (assert) => {
+    const groupPayload = {
+      name: "123",
+      description: "test",
+      schedule: "test",
+      location: "test",
+      chronic: "test",
+      master: user.id,
+    };
+    const response = await supertest(BASEURL)
+      .post("/groups")
+      .set("Authorization", `Bearer ${token}`)
+      .send(groupPayload)
+      .expect(201);
+    await supertest(BASEURL)
+      .post("/groups")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ ...groupPayload, name: "12345", description: "123456789" })
+      .expect(201);
+    const group = response.body.group;
+
+    const { body } = await supertest(BASEURL)
+      .get(`/groups?text=es`)
       .set("Authorization", `Bearer ${token}`)
       .expect(200);
 
